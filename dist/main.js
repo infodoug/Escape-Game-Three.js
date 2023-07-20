@@ -5,6 +5,13 @@ import { PointerLockControls } from 'three/addons/controls/PointerLockControls.j
 let renderer, scene, camera, pControl;
 let xdir = 0, zdir = 0
 let tempoI, tempoF, vel, deltaT
+let loader
+var mouse, raycaster
+let boxGeometry, boxMaterial, boxMesh;
+let isBoxSelected = false;
+
+let gaveta1voxModel, gaveta1selected = false, gaveta1open = false;
+
 
 function init() {
 
@@ -13,17 +20,77 @@ function init() {
 	renderer.setSize( window.innerWidth, window.innerHeight );
 	document.body.appendChild( renderer.domElement );
 
+	// raycaster
+	mouse = new THREE.Vector2
+	raycaster = new THREE.Raycaster()
+	raycaster.far = 13;
+
 	// scene
 	scene = new THREE.Scene();
 	scene.add(new THREE.GridHelper(100, 100))
 
+	const ground = new THREE.Mesh(
+		new THREE.PlaneGeometry( 100, 100, 1, 1 ),
+		new THREE.MeshPhongMaterial( { color: 0xa0adaf, shininess: 150 } )
+	);
+
+	ground.rotation.x = - Math.PI / 2; // rotates X/Y to X/Z
+	ground.receiveShadow = true;
+	scene.add( ground );
+
 	// camera
 	const aspect = window.innerWidth / window.innerHeight;
 	camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 1000 );
-	camera.position.y = 5
+	camera.position.y = 7
 
 	// ambient
-	scene.add( new THREE.AmbientLight( 0x444444 ) );
+	const light1 = new THREE.PointLight(0xFFFFFF, 1)
+	light1.position.set(-20, 20, 20)
+	scene.add(light1)
+
+	const sphereSize = 1;
+	const pointLightHelper = new THREE.PointLightHelper( light1, sphereSize );
+	scene.add( pointLightHelper );
+
+	  // Criar a geometria da caixa
+	  boxGeometry = new THREE.BoxGeometry(2, 2, 2);
+
+	  // Criar um material inicial com uma cor padrão
+	  boxMaterial = new THREE.MeshPhongMaterial({ color: 0xFFFFFF });
+	
+	  // Criar uma malha com a geometria e o material
+	  boxMesh = new THREE.Mesh(boxGeometry, boxMaterial);
+	  boxMesh.position.set(0, 1, 0);
+	  scene.add(boxMesh);
+
+	loader = new GLTFLoader()
+
+	loader.load( 'models/Flower.glb', function ( gltf ) {
+		gltf.scene.scale.setScalar( 5 )
+		gltf.scene.position.set( -1, 0, -1 )
+		scene.add( gltf.scene )
+	}, undefined, function ( error ) {
+		console.error( error )
+	})
+
+	loader.load( 'models/mesavox.glb', function ( gltf ) {
+		gltf.scene.scale.setScalar( 3 )
+		gltf.scene.position.set( -46, 0, 40 )
+		gltf.scene.rotation.y = Math.PI
+		scene.add( gltf.scene )
+	}, undefined, function ( error ) {
+		console.error( error )
+	})
+
+	loader.load( 'models/gaveta1vox.glb', function ( gltf ) {
+		gltf.scene.scale.setScalar( 3 );
+		gltf.scene.position.set( -46, 1.8, 35.8 );
+		gltf.scene.rotation.y = Math.PI;
+		scene.add( gltf.scene );
+		gaveta1voxModel = gltf.scene.children[0];
+	}, undefined, function ( error ) {
+		console.error( error );
+	});
 
 	// axes
 	scene.add( new THREE.AxesHelper( 40 ) );
@@ -77,7 +144,32 @@ function init() {
 	})
 
 	tempoI = Date.now()
-	vel = 16
+	vel = 18
+
+	document.addEventListener("click", function () {
+		if (!pControl.isLocked) {
+		  pControl.lock();
+		}
+		else {
+			if (isBoxSelected) {
+				boxMesh.position.y +=1
+			}
+
+			if (gaveta1selected) {
+				if (gaveta1open == false){
+					gaveta1voxModel.position.x -= 0.5
+					gaveta1open = true
+				} else {
+					gaveta1voxModel.position.x += 0.5
+					gaveta1open = false
+				}
+				
+			}
+		}
+	  });
+
+	  
+	  
 }
 
 function render() {
@@ -95,9 +187,36 @@ function render() {
 
 	tempoI = tempoF
 
+	// Verificar colisões com o Raycaster
+	raycaster.setFromCamera(mouse, camera);
+	const intersects = raycaster.intersectObjects(scene.children);
+
+	// Verificar se o Raycaster colide com o BoxGeometry
+	if (intersects.length > 0 && intersects[0].object === boxMesh) {
+		// Raycast está colidindo com o BoxGeometry
+		isBoxSelected = true;
+		boxMaterial.color.set(0xff0000); // Definir a cor desejada quando selecionado
+		boxMesh.position.z += 0.03
+		} else {
+		// Raycast não está colidindo com o BoxGeometry
+		isBoxSelected = false;
+		boxMaterial.color.set(0xFFFFFF); // Voltar para a cor padrão
+	}
+
+	// Verificar se o Raycaster colide com o BoxGeometry
+	if (intersects.length > 0 && intersects[0].object === gaveta1voxModel) {
+		// Raycast está colidindo com o gaveta1voxModel
+		gaveta1selected = true;
+	} else {
+		gaveta1selected = false
+	}
+
+
 	renderer.render( scene, camera );
 
 }
+
+
 
 init();
 render();
