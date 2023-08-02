@@ -1,16 +1,21 @@
 import * as THREE from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js'
 import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js'
+//import { Porta } from './portas'
+//import { Quarto } from './quarto'
 
-let renderer, scene, camera, pControl;
+let renderer, camera, pControl;
+var scene;
 let xdir = 0, zdir = 0
 let tempoI, tempoF, vel, deltaT
-let loader
+let loader = new GLTFLoader()
 var mouse, raycaster
 let boxGeometry, boxMaterial, boxMesh;
 let isBoxSelected = false;
 
 let gaveta1voxModel, gaveta1selected = false, gaveta1open = false;
+let porta1 = null;
+
 
 
 function init() {
@@ -63,34 +68,69 @@ function init() {
 	  boxMesh.position.set(0, 1, 0);
 	  scene.add(boxMesh);
 
-	loader = new GLTFLoader()
+	  class Porta {
+		constructor(model, x, y, z) {
+			this.portatrancada = true;
+		  this.portaselected = false;
+		  this.portaopen = false;
+		  this.porta = null;
 
-	loader.load( 'models/Flower.glb', function ( gltf ) {
-		gltf.scene.scale.setScalar( 5 )
-		gltf.scene.position.set( -1, 0, -1 )
-		scene.add( gltf.scene )
-	}, undefined, function ( error ) {
-		console.error( error )
-	})
+		  	const geometry = new THREE.BoxGeometry( 1, 0, 1 ); 
+			const material = new THREE.MeshBasicMaterial( {color: 0xffff00} ); 
+			const hinge = new THREE.Mesh( geometry, material );
 
-	loader.load( 'models/mesavox.glb', function ( gltf ) {
-		gltf.scene.scale.setScalar( 3 )
-		gltf.scene.position.set( -46, 0, 40 )
-		gltf.scene.rotation.y = Math.PI
-		scene.add( gltf.scene )
-	}, undefined, function ( error ) {
-		console.error( error )
-	})
+		  this.portafuncional = hinge;
 
-	loader.load( 'models/gaveta1vox.glb', function ( gltf ) {
-		gltf.scene.scale.setScalar( 3 );
-		gltf.scene.position.set( -46, 1.8, 35.8 );
-		gltf.scene.rotation.y = Math.PI;
-		scene.add( gltf.scene );
-		gaveta1voxModel = gltf.scene.children[0];
-	}, undefined, function ( error ) {
-		console.error( error );
-	});
+		  loader.load(model, (gltf) => {
+			gltf.scene.scale.setScalar(3);
+			gltf.scene.position.set(x/3, y/3, z/3);
+			this.portafuncional.add(gltf.scene);
+			this.porta = gltf.scene.children[0];
+		  });
+
+
+
+			
+			//group.add( this.porta );
+			this.portafuncional.add( hinge );
+			hinge.position.set(x, y, z)
+			//this.portafuncional = group;
+
+			scene.add( this.portafuncional );
+		}
+	  }
+	  
+
+	  function Quarto() {
+		loader.load( 'models/Flower.glb', function ( gltf ) {
+			gltf.scene.scale.setScalar( 5 )
+			gltf.scene.position.set( -1, 0, -1 )
+			scene.add( gltf.scene )
+		}, undefined, function ( error ) {
+			console.error( error )
+		})
+	
+		loader.load( 'models/mesavox.glb', function ( gltf ) {
+			gltf.scene.scale.setScalar( 3 )
+			gltf.scene.position.set( -46, 0, 40 )
+			gltf.scene.rotation.y = Math.PI
+			scene.add( gltf.scene )
+		}, undefined, function ( error ) {
+			console.error( error )
+		})
+	
+		loader.load( 'models/gaveta1vox.glb', function ( gltf ) {
+			gltf.scene.scale.setScalar( 3 );
+			gltf.scene.position.set( -46, 1.8, 35.8 );
+			gltf.scene.rotation.y = Math.PI;
+			scene.add( gltf.scene );
+			gaveta1voxModel = gltf.scene.children[0];
+		}, undefined, function ( error ) {
+			console.error( error );
+		});
+
+		porta1 = new Porta('models/porta1.glb', -10, 0, 0)
+	}
 
 	// axes
 	scene.add( new THREE.AxesHelper( 40 ) );
@@ -146,6 +186,9 @@ function init() {
 	tempoI = Date.now()
 	vel = 18
 
+	Quarto()
+
+
 	document.addEventListener("click", function () {
 		if (!pControl.isLocked) {
 		  pControl.lock();
@@ -165,9 +208,23 @@ function init() {
 				}
 				
 			}
+
+			if (porta1.portaselected) {
+				if (porta1.portatrancada = false)
+				{if (porta1.portaopen == false) {
+				  porta1.portafuncional.rotation.y -= 1.5
+				  porta1.portaopen = true;
+				} else {
+					porta1.portafuncional.rotation.y += 1.5
+				  porta1.portaopen = false;
+				}
+				} else {
+					document.write('A porta está trancada.')
+				}
+			}
 		}
 	  });
-
+	
 	  
 	  
 }
@@ -203,12 +260,20 @@ function render() {
 		boxMaterial.color.set(0xFFFFFF); // Voltar para a cor padrão
 	}
 
-	// Verificar se o Raycaster colide com o BoxGeometry
+	// Verificar se o Raycaster colide com a gaveta1
 	if (intersects.length > 0 && intersects[0].object === gaveta1voxModel) {
 		// Raycast está colidindo com o gaveta1voxModel
 		gaveta1selected = true;
 	} else {
 		gaveta1selected = false
+	}
+
+	// Verificar se o Raycaster colide com a porta1
+	if (intersects.length > 0 && intersects[0].object === porta1.porta) {
+		// Raycast está colidindo com a porta1
+		porta1.portaselected = true;
+	} else {
+		porta1.portaselected = false
 	}
 
 
