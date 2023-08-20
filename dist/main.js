@@ -165,6 +165,16 @@ function init() {
 		}, undefined, function ( error ) {
 			console.error( error );
 		});
+	
+		loader.load( 'models/parede1vox.glb', function ( gltf ) {
+			gltf.scene.scale.setScalar( 3 );
+			gltf.scene.position.set( -25.035, 0, 0 );
+			gltf.scene.rotation.y = Math.PI;
+			scene.add( gltf.scene );
+			parede1voxModel = gltf.scene.children[0];
+		}, undefined, function ( error ) {
+			console.error( error );
+		});
 
 		chave1 = new Item('models/chave1Vox.glb', 1, -35, 6, 35.8, 'Chave 1')
 
