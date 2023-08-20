@@ -14,7 +14,9 @@ let boxGeometry, boxMaterial, boxMesh;
 let isBoxSelected = false;
 
 let gaveta1voxModel, gaveta1selected = false, gaveta1open = false;
-let porta1 = null;
+let porta1, chave1 = null;
+
+let inventario = new Array();
 
 
 
@@ -28,7 +30,7 @@ function init() {
 	// raycaster
 	mouse = new THREE.Vector2
 	raycaster = new THREE.Raycaster()
-	raycaster.far = 13;
+	raycaster.far = 5000;
 
 	// scene
 	scene = new THREE.Scene();
@@ -88,18 +90,50 @@ function init() {
 			this.porta = gltf.scene.children[0];
 		  });
 
-
-
-			
-			//group.add( this.porta );
 			this.portafuncional.add( hinge );
 			hinge.position.set(x, y, z)
-			//this.portafuncional = group;
 
 			scene.add( this.portafuncional );
+
+			document.addEventListener("click", function () {
+				if (pControl.isLocked) {
+					if (porta1.portaselected) {
+						if (porta1.portatrancada == true && inventario.includes('Chave 1'))
+						{if (porta1.portaopen == false) {
+						  porta1.portafuncional.rotation.y -= 1.5
+						  porta1.portaopen = true;
+						} else {
+							porta1.portafuncional.rotation.y += 1.5
+						  porta1.portaopen = false;
+						}
+					}}}})
 		}
 	  }
 	  
+	  class Item {
+		constructor(model, scalar, x, y, z, nome='') {
+			this.noInventario = false;
+			this.modeloItem = null;
+			this.selected = false;
+
+		  loader.load(model, (gltf) => {
+			gltf.scene.scale.setScalar(scalar);
+			gltf.scene.position.set(x, y, z);
+			scene.add(gltf.scene);
+			this.modeloItem = gltf.scene.children[0];
+		  });
+
+		  scene.add(this.modeloItem)
+
+		  document.addEventListener("click", () => {
+			if (pControl.isLocked) {
+				if (this.selected == true) {
+					this.noInventario = true
+					inventario.push(nome)
+				}
+			}
+		  });
+	  }}
 
 	  function Quarto() {
 		loader.load( 'models/Flower.glb', function ( gltf ) {
@@ -128,6 +162,8 @@ function init() {
 		}, undefined, function ( error ) {
 			console.error( error );
 		});
+
+		chave1 = new Item('models/chave1Vox.glb', 1, -35, 6, 35.8, 'Chave 1')
 
 		porta1 = new Porta('models/porta1.glb', -10, 0, 0)
 	}
@@ -209,19 +245,6 @@ function init() {
 				
 			}
 
-			if (porta1.portaselected) {
-				if (porta1.portatrancada = false)
-				{if (porta1.portaopen == false) {
-				  porta1.portafuncional.rotation.y -= 1.5
-				  porta1.portaopen = true;
-				} else {
-					porta1.portafuncional.rotation.y += 1.5
-				  porta1.portaopen = false;
-				}
-				} else {
-					document.write('A porta está trancada.')
-				}
-			}
 		}
 	  });
 	
@@ -274,6 +297,20 @@ function render() {
 		porta1.portaselected = true;
 	} else {
 		porta1.portaselected = false
+	}
+
+	// Verificar se o Raycaster colide com a chave1
+	if (intersects.length > 0 && intersects[0].object === chave1.modeloItem) {
+		// Raycast está colidindo com a chave1
+		chave1.selected = true;
+		
+	} else {
+		chave1.selected = false
+	}
+
+	if (chave1.noInventario) {
+		chave1.modeloItem.position.set(camera.position)
+		
 	}
 
 
