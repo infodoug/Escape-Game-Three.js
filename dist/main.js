@@ -130,6 +130,9 @@ function init() {
 				if (this.selected == true) {
 					this.noInventario = true
 					inventario.push(nome)
+					if (this.modeloItem.parent) {
+						this.modeloItem.parent.remove(this.modeloItem); // Remove o modelo da cena
+					  }
 				}
 			}
 		  });
@@ -308,10 +311,7 @@ function render() {
 		chave1.selected = false
 	}
 
-	if (chave1.noInventario) {
-		chave1.modeloItem.position.set(camera.position)
-		
-	}
+
 
 
 	renderer.render( scene, camera );
