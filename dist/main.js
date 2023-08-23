@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js'
 import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js'
+import { DragControls } from "three/addons/controls/DragControls.js";
 //import { Porta } from './portas'
 //import { Quarto } from './quarto'
 
@@ -18,6 +19,8 @@ let porta1, chave1, parede1, parede1a, parede1b, parede1c, cama = null;
 
 let inventario = new Array();
 
+let arrastaveis = []
+
 
 
 function init() {
@@ -30,7 +33,7 @@ function init() {
 	// raycaster
 	mouse = new THREE.Vector2
 	raycaster = new THREE.Raycaster()
-	raycaster.far = 5000;
+	raycaster.far = 15;
 
 	// scene
 	scene = new THREE.Scene();
@@ -150,6 +153,7 @@ function init() {
 	  class Objeto {
 		constructor(model, scalar, x, y, z, rotY, nome='') {
 			this.selected = false;
+			this.modeloObjeto = null;
 
 		  loader.load(model, (gltf) => {
 			gltf.scene.scale.setScalar(scalar);
@@ -286,6 +290,25 @@ function init() {
 		}
 	  });
 	
+
+	  const geometry = new THREE.SphereGeometry(1, 32, 32);
+	  const material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+	  const sphere = new THREE.Mesh(geometry, material);
+	  scene.add(sphere);
+	  
+	  const dragControls = new DragControls([sphere, boxMesh], camera, renderer.domElement);
+
+	  dragControls.addEventListener('drag', (event) => {
+		const intersection = raycaster.intersectObject(event.object)[0];
+		if (intersection && pControl.isLocked) {
+		  // Atualize a posição do objeto com base na interseção do raio
+		  event.object.position.x.copy(intersection.point.position.x/2);
+		  event.object.position.y.copy(intersection.point.position.y/2);
+		  event.object.position.z.copy(intersection.point.position.z/2);
+		}
+	  });
+	  
+
 	  
 	  
 }
