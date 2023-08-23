@@ -14,7 +14,7 @@ let boxGeometry, boxMaterial, boxMesh;
 let isBoxSelected = false;
 
 let gaveta1voxModel, gaveta1selected = false, gaveta1open = false;
-let porta1, chave1, parede1, parede1a, parede1b, parede1c = null;
+let porta1, chave1, parede1, parede1a, parede1b, parede1c, cama = null;
 
 let inventario = new Array();
 
@@ -200,8 +200,10 @@ function init() {
 		parede1 = new Objeto('models/parede1vox.glb', 3, -25.035, 0, 0, Math.PI)
 
 		parede1a = new Objeto('models/paredecomum.glb', 3, -50, 0, 25.5, 1.57)
-		parede1b = new Objeto('models/paredecomum.glb', 3, 0, 0, 25, 1.57)
+		parede1b = new Objeto('models/paredecomum.glb', 3, 0, 0, 25.5, 1.57)
 		parede1c = new Objeto('models/paredecomum.glb', 3, -25.035, 0, 50, Math.PI)
+
+		cama = new Objeto('models/camavox.glb', 2.5, -10, 0, 35, Math.PI+Math.PI/2)
 	}
 
 	// axes
