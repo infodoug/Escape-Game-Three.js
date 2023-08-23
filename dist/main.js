@@ -14,7 +14,7 @@ let boxGeometry, boxMaterial, boxMesh;
 let isBoxSelected = false;
 
 let gaveta1voxModel, gaveta1selected = false, gaveta1open = false;
-let porta1, chave1 = null;
+let porta1, chave1, parede1, parede1a, parede1b, parede1c = null;
 
 let inventario = new Array();
 
@@ -138,6 +138,22 @@ function init() {
 		  });
 	  }}
 
+	  class Objeto {
+		constructor(model, scalar, x, y, z, rotY, nome='') {
+			this.selected = false;
+
+		  loader.load(model, (gltf) => {
+			gltf.scene.scale.setScalar(scalar);
+			gltf.scene.position.set(x, y, z);
+			gltf.scene.rotation.y = rotY;
+			scene.add(gltf.scene);
+			this.modeloObjeto = gltf.scene.children[0];
+		  });
+
+		  scene.add(this.modeloObjeto)
+		}
+	  }
+
 	  function Quarto() {
 		loader.load( 'models/Flower.glb', function ( gltf ) {
 			gltf.scene.scale.setScalar( 5 )
@@ -166,19 +182,17 @@ function init() {
 			console.error( error );
 		});
 	
-		loader.load( 'models/parede1vox.glb', function ( gltf ) {
-			gltf.scene.scale.setScalar( 3 );
-			gltf.scene.position.set( -25.035, 0, 0 );
-			gltf.scene.rotation.y = Math.PI;
-			scene.add( gltf.scene );
-			parede1voxModel = gltf.scene.children[0];
-		}, undefined, function ( error ) {
-			console.error( error );
-		});
+
 
 		chave1 = new Item('models/chave1Vox.glb', 1, -35, 6, 35.8, 'Chave 1')
 
 		porta1 = new Porta('models/porta1.glb', -10, 0, 0)
+
+		parede1 = new Objeto('models/parede1vox.glb', 3, -25.035, 0, 0, Math.PI)
+
+		parede1a = new Objeto('models/paredecomum.glb', 3, -50, 0, 25.5, 1.57)
+		parede1b = new Objeto('models/paredecomum.glb', 3, 0, 0, 25, 1.57)
+		parede1c = new Objeto('models/paredecomum.glb', 3, -25.035, 0, 50, Math.PI)
 	}
 
 	// axes
