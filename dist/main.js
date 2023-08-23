@@ -51,13 +51,22 @@ function init() {
 	camera.position.y = 7
 
 	// ambient
-	const light1 = new THREE.PointLight(0xFFFFFF, 1)
-	light1.position.set(-20, 20, 20)
+	const light1 = new THREE.PointLight(0xFFFFFF, 0.5)
+	light1.position.set(-25, 30, 20)
 	scene.add(light1)
 
 	const sphereSize = 1;
 	const pointLightHelper = new THREE.PointLightHelper( light1, sphereSize );
 	scene.add( pointLightHelper );
+
+	// ambient
+	const light2 = new THREE.PointLight(0xFFFFFF, 0.5)
+	light2.position.set(-25, 30, 30)
+	scene.add(light2)
+
+	const sphereSize2 = 1;
+	const pointLightHelper2 = new THREE.PointLightHelper( light2, sphereSize );
+	scene.add( pointLightHelper2 );
 
 	  // Criar a geometria da caixa
 	  boxGeometry = new THREE.BoxGeometry(2, 2, 2);
