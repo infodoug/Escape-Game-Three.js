@@ -1,5 +1,4 @@
 import * as THREE from 'three';
-import * as CANNON from 'cannon';
 
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js'
 import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js'
@@ -23,12 +22,6 @@ let inventario = new Array();
 
 let arrastaveis = []
 
-let world; // Create a variable for the Cannon.js world
-
-function initPhysics() {
-  world = new CANNON.World();
-  world.gravity.set(0, -9.81, 0); // Set the gravity
-}
 
 
 function init() {
