@@ -21,11 +21,6 @@ let inventario = new Array();
 let arrastaveis = []
 let physicsWorld, scene, camera, renderer, rigidBodies = [], tmpTrans, clock;
 
-// permitindo a movimentação do player
-let playerObject = null, 
-moveDirection = { left: 0, right: 0, forward: 0, back: 0 }
-const STATE = { DISABLE_DEACTIVATION : 4 }
-
 Ammo().then(start);
 
 function start (){
@@ -38,9 +33,8 @@ function start (){
 	creatPlayer();
 
     //createBox();
-    createBlock();
+    //createBlock();
 
-	setupEventHandlers();
     renderFrame();
 }
 
@@ -302,9 +296,6 @@ function setupGraphics(){
 
 function renderFrame(){
     let deltaTime = clock.getDelta();
-	if (pControl.isLocked) {
-		movePlayer();
-	}
 
     updatePhysics( deltaTime );
 
@@ -369,64 +360,6 @@ function renderFrame(){
 	renderer.render( scene, camera );
 }
 
-function setupEventHandlers(){
-
-    window.addEventListener( 'keydown', handleKeyDown, false);
-    window.addEventListener( 'keyup', handleKeyUp, false);
-
-}
-
-
-function handleKeyDown(event){
-
-    let keyCode = event.keyCode;
-
-    switch(keyCode){
-
-        case 87: //W: FORWARD
-            moveDirection.forward = 1
-            break;
-
-        case 83: //S: BACK
-            moveDirection.back = 1
-            break;
-
-        case 65: //A: LEFT
-            moveDirection.left = 1
-            break;
-
-        case 68: //D: RIGHT
-            moveDirection.right = 1
-            break;
-
-    }
-}
-
-
-function handleKeyUp(event){
-    let keyCode = event.keyCode;
-
-    switch(keyCode){
-        case 87: //FORWARD
-            moveDirection.forward = 0
-            break;
-
-        case 83: //BACK
-            moveDirection.back = 0
-            break;
-
-        case 65: //LEFT
-            moveDirection.left = 0
-            break;
-
-        case 68: //RIGHT
-            moveDirection.right = 0
-            break;
-
-    }
-
-}
-
 function createBlock(){    
     let pos = {x: -20, y: 0, z: -20};
     let scale = {x: 50, y: 2, z: 50};
@@ -481,20 +414,20 @@ function updatePhysics( deltaTime ){
 
 
 
-function createBoxPlayer(posx, posy, posz, sx, sy, sz) {
+function createBox(posx, posy, posz, sx, sy, sz, parent) {
     let pos = {x: posx, y: posy, z: posz};
     let scale = {x: sx, y: sy, z: sz};
     let quat = {x: 0, y: 0, z: 0, w: 1};
-    let mass = 1;
+    let mass = 0;
 
-    let box = playerObject = new THREE.Mesh(new THREE.BoxGeometry(scale.x, scale.y, scale.z), new THREE.MeshPhongMaterial({color: 0xff0505}));
+    let box = new THREE.Mesh(new THREE.BoxGeometry(scale.x, scale.y, scale.z), new THREE.MeshPhongMaterial({color: 0xff0505}));
 
     box.position.set(pos.x, pos.y, pos.z);
     
     box.castShadow = true;
     box.receiveShadow = true;
 
-    scene.add(box);
+    parent.add(box);
     
     let transform = new Ammo.btTransform();
     transform.setIdentity();
@@ -511,8 +444,6 @@ function createBoxPlayer(posx, posy, posz, sx, sy, sz) {
     let rbInfo = new Ammo.btRigidBodyConstructionInfo( mass, motionState, colShape, localInertia );
     let body = new Ammo.btRigidBody( rbInfo );
 
-	body.setActivationState( STATE.DISABLE_DEACTIVATION );
-
     physicsWorld.addRigidBody( body );
     
     box.userData.physicsBody = body;
@@ -520,28 +451,8 @@ function createBoxPlayer(posx, posy, posz, sx, sy, sz) {
 }
 
 
-function movePlayer(){
-
-    let scalingFactor = 4;
-
-    let moveX =  moveDirection.right - moveDirection.left;
-    let moveZ =  moveDirection.back - moveDirection.forward;
-    let moveY =  0; 
-
-    if( moveX == 0 && moveY == 0 && moveZ == 0) return;
-
-    let resultantImpulse = new Ammo.btVector3( moveX, moveY, moveZ )
-    resultantImpulse.op_mul(scalingFactor);
-
-    let physicsBody = playerObject.userData.physicsBody;
-    physicsBody.setLinearVelocity( resultantImpulse );
-
-}
-
-
 function creatPlayer() {
-	createBoxPlayer(-20, 5, -20, 2, 2, 2);
-	rigidBodies[0].add(camera)
+	createBox(0, 1, 0, 3, 3, 3, scene);
 
 	pControl = new PointerLockControls(camera, renderer.domElement)
 
@@ -549,5 +460,51 @@ function creatPlayer() {
 		pControl.lock()
 	}
 
+	document.addEventListener('keydown', (e)=>{
+		switch(e.code) {
+			case "KeyW":
+			case "ArrowUp":
+				zdir = 1
+				break
+			case "KeyA":
+			case "ArrowDown":
+				xdir = -1
+				break
+			case "KeyS":
+			case "ArrowLeft":
+				zdir = -1
+				break
+			case "KeyD":
+			case "ArrowRight":
+				xdir = 1
+				break
+		}
+	})
 
+	document.addEventListener('keyup', (e)=>{
+		switch(e.code) {
+			case "KeyW":
+			case "ArrowUp":
+				zdir = 0
+				break
+			case "KeyA":
+			case "ArrowLeft":
+				xdir = 0
+				break
+			case "KeyS":
+			case "ArrowDown":
+				zdir = 0
+				break
+			case "KeyD":
+			case "ArrowRight":
+				xdir = 0
+				break
+		}
+	})
+
+
+}
+
+function OnMouseMove() {
+	
 }
