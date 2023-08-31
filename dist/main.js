@@ -5,7 +5,7 @@ import { PointerLockControls } from 'three/addons/controls/PointerLockControls.j
 import { DragControls } from "three/addons/controls/DragControls.js";
 
 let pControl;
-let xdir = 0, zdir = 0
+let xdir = 0, zdir = 0, turnAround = 0;
 let tempoI, tempoF, vel, deltaT
 let loader = new GLTFLoader()
 var mouse, raycaster
@@ -140,7 +140,7 @@ function setupGraphics(){
 			scene.add( this.portafuncional );
 
 			document.addEventListener("click", function () {
-				if (pControl.isLocked) {
+				if (!pControl.isLocked) {
 					if (porta1.portaselected) {
 						if (porta1.portatrancada == true && inventario.includes('Chave 1'))
 						{if (porta1.portaopen == false) {
@@ -170,7 +170,7 @@ function setupGraphics(){
 		  scene.add(this.modeloItem)
 
 		  document.addEventListener("click", () => {
-			if (pControl.isLocked) {
+			if (!pControl.isLocked) {
 				if (this.selected == true) {
 					this.noInventario = true
 					inventario.push(nome)
@@ -254,8 +254,8 @@ function setupGraphics(){
 
 
 	document.addEventListener("click", function () {
-		if (!pControl.isLocked) {
-		  pControl.lock();
+		if (pControl.isLocked) {
+		  !pControl.lock();
 		}
 		else {
 			if (isBoxSelected) {
@@ -276,6 +276,7 @@ function setupGraphics(){
 		}
 	  });
 	
+	  window.addEventListener('mousemove', mouselocation);
 
 	  const geometry = new THREE.SphereGeometry(1, 32, 32);
 	  const material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
@@ -286,7 +287,7 @@ function setupGraphics(){
 
 	  dragControls.addEventListener('drag', (event) => {
 		const intersection = raycaster.intersectObject(event.object)[0];
-		if (intersection && pControl.isLocked) {
+		if (intersection && !pControl.isLocked) {
 		  // Atualize a posição do objeto com base na interseção do raio
 		  event.object.position.x.copy(intersection.point.position.x/2);
 		  event.object.position.y.copy(intersection.point.position.y/2);
@@ -302,7 +303,7 @@ function setupGraphics(){
 
 function renderFrame(){
     let deltaTime = clock.getDelta();
-	if (pControl.isLocked) {
+	if (!pControl.isLocked) {
 		movePlayer();
 	}
 
@@ -378,57 +379,68 @@ function setupEventHandlers(){
 
 
 function handleKeyDown(event){
+	document.addEventListener('keydown', (e)=>{
+		switch(e.code) {
+			case "KeyW":
+			case "ArrowUp":
+				zdir = -1
+				break
+			case "KeyA":
+			case "ArrowLeft":
+				xdir = -1
+				break
+			case "KeyS":
+			case "ArrowDown":
+				zdir = 1
+				break
+			case "KeyD":
+			case "ArrowRight":
+				xdir = 1
+				break
+			case "KeyQ":
+				turnAround = -1
+				break
+			case "KeyE":
+				turnAround = 1
+				break
+		}
+	})
 
-    let keyCode = event.keyCode;
-
-    switch(keyCode){
-
-        case 87: //W: FORWARD
-            moveDirection.forward = 1
-            break;
-
-        case 83: //S: BACK
-            moveDirection.back = 1
-            break;
-
-        case 65: //A: LEFT
-            moveDirection.left = 1
-            break;
-
-        case 68: //D: RIGHT
-            moveDirection.right = 1
-            break;
-
-    }
 }
 
 
-function handleKeyUp(event){
-    let keyCode = event.keyCode;
-
-    switch(keyCode){
-        case 87: //FORWARD
-            moveDirection.forward = 0
-            break;
-
-        case 83: //BACK
-            moveDirection.back = 0
-            break;
-
-        case 65: //LEFT
-            moveDirection.left = 0
-            break;
-
-        case 68: //RIGHT
-            moveDirection.right = 0
-            break;
-
-    }
+function handleKeyUp(){
+	document.addEventListener('keyup', (e)=>{
+		switch(e.code) {
+			case "KeyW":
+			case "ArrowUp":
+				zdir = 0
+				break
+			case "KeyA":
+			case "ArrowLeft":
+				xdir = 0
+				break
+			case "KeyS":
+			case "ArrowDown":
+				zdir = 0
+				break
+			case "KeyD":
+			case "ArrowRight":
+				xdir = 0
+				break
+			case "KeyQ":
+				turnAround = 0
+				break
+			case "KeyE":
+				turnAround = 0
+				break
+		}
+	})
 
 }
 
 function createBlock(){    
-    let pos = {x: -20, y: 0, z: -20};
+    let pos = {x: -25, y: 0, z: 25};
     let scale = {x: 50, y: 2, z: 50};
     let quat = {x: 0, y: 0, z: 0, w: 1};
     let mass = 0;
@@ -487,14 +499,14 @@ function createBoxPlayer(posx, posy, posz, sx, sy, sz) {
     let quat = {x: 0, y: 0, z: 0, w: 1};
     let mass = 1;
 
-    let box = playerObject = new THREE.Mesh(new THREE.BoxGeometry(scale.x, scale.y, scale.z), new THREE.MeshPhongMaterial({color: 0xff0505}));
+    playerObject = new THREE.Mesh(new THREE.BoxGeometry(scale.x, scale.y, scale.z), new THREE.MeshPhongMaterial({color: 0xff0505}));
 
-    box.position.set(pos.x, pos.y, pos.z);
+    playerObject.position.set(pos.x, pos.y, pos.z)
     
-    box.castShadow = true;
-    box.receiveShadow = true;
+    playerObject.castShadow = true;
+    playerObject.receiveShadow = true;
 
-    scene.add(box);
+    scene.add(playerObject);
     
     let transform = new Ammo.btTransform();
     transform.setIdentity();
@@ -515,18 +527,21 @@ function createBoxPlayer(posx, posy, posz, sx, sy, sz) {
 
     physicsWorld.addRigidBody( body );
     
-    box.userData.physicsBody = body;
-    rigidBodies.push(box);
+    playerObject.userData.physicsBody = body;
+    rigidBodies.push(playerObject);
 }
 
 
 function movePlayer(){
 
-    let scalingFactor = 4;
+    let scalingFactor = 5;
 
-    let moveX =  moveDirection.right - moveDirection.left;
-    let moveZ =  moveDirection.back - moveDirection.forward;
+
+
+    let moveX =  xdir;
+    let moveZ =  zdir;
     let moveY =  0; 
+	let rotateY = turnAround;
 
     if( moveX == 0 && moveY == 0 && moveZ == 0) return;
 
@@ -536,18 +551,38 @@ function movePlayer(){
     let physicsBody = playerObject.userData.physicsBody;
     physicsBody.setLinearVelocity( resultantImpulse );
 
+
+	const resultantImpulseRotation = new Ammo.btVector3(0, rotateY, 0);
+	resultantImpulseRotation.op_mul(15);
+	physicsBody.setAngularVelocity(resultantImpulseRotation);
+
+
+
+
+
 }
 
 
 function creatPlayer() {
-	createBoxPlayer(-20, 5, -20, 2, 2, 2);
+	createBoxPlayer(-20, 5, 20, 2, 2, 2);
 	rigidBodies[0].add(camera)
 
-	pControl = new PointerLockControls(camera, renderer.domElement)
+	pControl = new PointerLockControls(rigidBodies[0], renderer.domElement)
 
 	document.getElementById('btnPlay').onclick = ()=>{
 		pControl.lock()
 	}
 
+
+}
+
+
+
+const mouselocation = (event) => {
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+
+    mouse.x = (event.clientX / width * 2 - 1);
+    mouse.y = -(event.clientY / height) * 2 + 1;
 
 }
