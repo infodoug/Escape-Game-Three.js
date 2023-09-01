@@ -316,9 +316,9 @@ function renderFrame(){
 	deltaT = (tempoF - tempoI)/1000
 
 	let xDis = xdir * vel * deltaT
-	let zDis = zdir * vel * deltaT
+	let zDis = zdir * 15 * deltaT
 
-	pControl.moveRight(xDis)
+	//pControl.moveRight(xDis)
 	pControl.moveForward(zDis)
 
 	tempoI = tempoF
@@ -543,17 +543,18 @@ function movePlayer(){
     let moveY =  0; 
 	let rotateY = turnAround;
 
-    if( moveX == 0 && moveY == 0 && moveZ == 0) return;
+    //if( moveX == 0 && moveY == 0 && moveZ == 0) return;
 
-    let resultantImpulse = new Ammo.btVector3( moveX, moveY, moveZ )
+    let resultantImpulse = new Ammo.btVector3( 0, 0, moveZ )
     resultantImpulse.op_mul(scalingFactor);
 
     let physicsBody = playerObject.userData.physicsBody;
     physicsBody.setLinearVelocity( resultantImpulse );
 
 
-	const resultantImpulseRotation = new Ammo.btVector3(0, rotateY, 0);
-	resultantImpulseRotation.op_mul(15);
+
+	const resultantImpulseRotation = new Ammo.btVector3(0, -moveX, 0);
+	resultantImpulseRotation.op_mul(1);
 	physicsBody.setAngularVelocity(resultantImpulseRotation);
 
 
