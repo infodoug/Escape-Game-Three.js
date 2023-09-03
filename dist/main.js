@@ -65,7 +65,7 @@ function setupGraphics(){
 	// raycaster
 	mouse = new THREE.Vector2
 	raycaster = new THREE.Raycaster()
-	raycaster.far = 15;
+	raycaster.far = 30;
 
 	// scene
 	scene = new THREE.Scene();
@@ -83,7 +83,7 @@ function setupGraphics(){
 	// camera
 	const aspect = window.innerWidth / window.innerHeight;
 	camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 1000 );
-	camera.position.y = 7
+	camera.position.y = 3
 
 	// ambient
 	const light1 = new THREE.PointLight(0xFFFFFF, 0.5)
@@ -275,8 +275,6 @@ function setupGraphics(){
 
 		}
 	  });
-	
-	  window.addEventListener('mousemove', mouselocation);
 
 	  const geometry = new THREE.SphereGeometry(1, 32, 32);
 	  const material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
@@ -303,12 +301,12 @@ function setupGraphics(){
 
 function renderFrame(){
     let deltaTime = clock.getDelta();
+
+
+    updatePhysics( deltaTime );
 	if (!pControl.isLocked) {
 		movePlayer();
 	}
-
-    updatePhysics( deltaTime );
-
 	requestAnimationFrame(renderFrame)
 
 	tempoF = Date.now()
@@ -319,7 +317,7 @@ function renderFrame(){
 	let zDis = zdir * 15 * deltaT
 
 	//pControl.moveRight(xDis)
-	pControl.moveForward(zDis)
+	//pControl.moveForward(zDis)
 
 	tempoI = tempoF
 
@@ -398,11 +396,12 @@ function handleKeyDown(event){
 				xdir = 1
 				break
 			case "KeyQ":
-				turnAround = -1
-				break
-			case "KeyE":
 				turnAround = 1
 				break
+			case "KeyE":
+				turnAround = -1
+				break
+
 		}
 	})
 
@@ -545,7 +544,7 @@ function movePlayer(){
 
     //if( moveX == 0 && moveY == 0 && moveZ == 0) return;
 
-    let resultantImpulse = new Ammo.btVector3( 0, 0, moveZ )
+    let resultantImpulse = new Ammo.btVector3( moveX, 0, moveZ )
     resultantImpulse.op_mul(scalingFactor);
 
     let physicsBody = playerObject.userData.physicsBody;
@@ -553,7 +552,7 @@ function movePlayer(){
 
 
 
-	const resultantImpulseRotation = new Ammo.btVector3(0, -moveX, 0);
+	const resultantImpulseRotation = new Ammo.btVector3(0, rotateY, 0);
 	resultantImpulseRotation.op_mul(1);
 	physicsBody.setAngularVelocity(resultantImpulseRotation);
 
@@ -565,7 +564,7 @@ function movePlayer(){
 
 
 function creatPlayer() {
-	createBoxPlayer(-20, 5, 20, 2, 2, 2);
+	createBoxPlayer(-20, 1, 20, 2, 2, 2);
 	rigidBodies[0].add(camera)
 
 	pControl = new PointerLockControls(rigidBodies[0], renderer.domElement)
@@ -574,16 +573,5 @@ function creatPlayer() {
 		pControl.lock()
 	}
 
-
-}
-
-
-
-const mouselocation = (event) => {
-    const width = window.innerWidth;
-    const height = window.innerHeight;
-
-    mouse.x = (event.clientX / width * 2 - 1);
-    mouse.y = -(event.clientY / height) * 2 + 1;
 
 }
