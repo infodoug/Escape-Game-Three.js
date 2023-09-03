@@ -32,9 +32,6 @@ function start (){
 
 	creatPlayer();
 
-    //createBox();
-    //createBlock();
-
     renderFrame();
 }
 
@@ -77,7 +74,7 @@ function setupGraphics(){
 	// camera
 	const aspect = window.innerWidth / window.innerHeight;
 	camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 1000 );
-	camera.position.y = 7
+	camera.position.set(-10, 7, 40)
 
 	// ambient
 	const light1 = new THREE.PointLight(0xFFFFFF, 0.5)
@@ -223,7 +220,7 @@ function setupGraphics(){
 	
 
 
-		chave1 = new Item('models/chave1Vox.glb', 1, -35, 6, 35.8, 'Chave 1')
+		chave1 = new Item('models/chave1Vox.glb', 1.3, -44.3, 2.8, 35.8, 'Chave 1')
 
 		porta1 = new Porta('models/porta1.glb', -10, 0, 0)
 
@@ -452,7 +449,6 @@ function createBox(posx, posy, posz, sx, sy, sz, parent) {
 
 
 function creatPlayer() {
-	createBox(0, 1, 0, 3, 3, 3, scene);
 
 	pControl = new PointerLockControls(camera, renderer.domElement)
 
@@ -503,8 +499,4 @@ function creatPlayer() {
 	})
 
 
-}
-
-function OnMouseMove() {
-	
 }
